@@ -55,7 +55,9 @@ void loop() {
   
   if (sensorValue > 700) {
     digitalWrite(elPin, HIGH);
+    digitalWrite(ledPin, HIGH);
   } else {
     digitalWrite(elPin, LOW);
+    digitalWrite(ledPin, LOW);
   }
 }
