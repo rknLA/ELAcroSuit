@@ -64,7 +64,7 @@ byte stage = 0;
 unsigned long change_time = 0;
 void loop() {
   unsigned long now = millis();
-  if (now - change_time > 500) {
+  if (now - change_time > 200) {
     stage = (stage + 1); //% el_count;
 
     write_lights(stage);
