@@ -50,48 +50,42 @@ void setup() {
     }
   }
 
-/*
-  // start serial port at 9600 bps:
-  Serial.begin(9600);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for Leonardo only
-  }
-  */
+
 }
 
-unsigned int adcMax = 1024;
-unsigned int adcMin = 0;
-unsigned int adcRange = 1;
-int lastElLit = -1;
+
+int lastHighBit = 0;
+unsigned long lastTime = 0;
 void loop() {
-  // sensor is active low
-  int sensorValue = 1023 - analogRead(A7);
-  
-  // maintain extrema
-  adcMax = max(adcMax, sensorValue);
-  adcMin = min(adcMin, sensorValue);
-  adcRange = adcMax - adcMin;
-  
-  // in case Bad Things happen
-  if (adcRange > 1024) {
-    adcRange = 0;
+  unsigned long now = millis();
+  if (now - lastTime > 300) {
+    // 300 ms refresh rate
+    int pressure = 1024 - analogRead(A7);
+    
+    // chop the last 2 bits
+    byte scaledPressure = pressure >> 2;
+    
+    byte highBit = highest_order_bit(scaledPressure);
+    if (highBit != lastHighBit) {
+      digitalWrite(el_pins[highBit], HIGH);
+      digitalWrite(el_pins[lastHighBit], LOW);
+      lastHighBit = highBit;
+    }
+    
+    lastTime = now;
   }
-  
-  
-  // scale input according to extrema
-  int scaledValue = (sensorValue - adcMin) / adcRange;
-  
-  // map scaped value from 0-7
-  int valueAsElIndex = scaledValue / 8;
-  if (valueAsElIndex != lastElLit) {
-    digitalWrite(el_pins[valueAsElIndex], HIGH);
-    digitalWrite(el_pins[lastElLit], LOW);
-    lastElLit = valueAsElIndex;
-  }      
-  
-  /*
-  Serial.print("Sensor value: ");
-  Serial.print(analogValue);
-  Serial.print("\n");
-  */
+}
+
+// highest order bit function from S.O.
+byte highest_order_bit(byte input) {
+  if (!input) {
+    return 0;
+  }
+ 
+  byte highest = 1;
+  while (input >>= 1) {
+    highest <<= 1;
+  }
+ 
+  return highest;
 }
