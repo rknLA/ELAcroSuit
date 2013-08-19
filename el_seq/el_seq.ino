@@ -54,23 +54,27 @@ void setup() {
 }
 
 
-int lastHighBit = 0;
+byte lastHighBit = 0;
 unsigned long lastTime = 0;
 void loop() {
   unsigned long now = millis();
   if (now - lastTime > 300) {
     // 300 ms refresh rate
+    /*
     int pressure = 1024 - analogRead(A7);
     
     // chop the last 2 bits
     byte scaledPressure = pressure >> 2;
     
     byte highBit = highest_order_bit(scaledPressure);
+    */
+    byte highBit = (lastHighBit + 1) % 8;
     if (highBit != lastHighBit) {
       digitalWrite(el_pins[highBit], HIGH);
       digitalWrite(el_pins[lastHighBit], LOW);
       lastHighBit = highBit;
     }
+    
     
     lastTime = now;
   }
