@@ -49,30 +49,49 @@ void setup() {
     }
   }
 
-#ifdef DEBUG
   // start serial port at 9600 bps:
   Serial.begin(9600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
-#endif
 }
 
 // for now, just display some el blinkies.
 byte lights = 0;
 byte stage = 0;
 unsigned long change_time = 0;
+int last_highest = -1;
 void loop() {
+  /*
   unsigned long now = millis();
-  if (now - change_time > 200) {
+  if (now - change_time > 250) {
     stage = (stage + 1); //% el_count;
 
     write_lights(stage);
     change_time = now;
   }
+  */
+  
+  int analogValue = analogRead(A7);
+  // find highest order bit
+  int highest = -1;
+  for (int i = 0; i < 8; ++i) {
+    if ((analogValue >> i) & 1) {
+      highest = i;
+    }
+  }
+  // compensate for 10 bit ADC
+  highest -= 2;
+  if (highest > 0) {
+    if (highest != last_highest) {
+      digitalWrite(el_pins[highest], HIGH);
+      digitalWrite(el_pins[last_highest], LOW);
+      last_highest = highest;
+    }
+  }      
   
   Serial.print("Sensor value: ");
-  Serial.print(analogRead(A7));
+  Serial.print(analogValue);
   Serial.print("\n");
 }
 
