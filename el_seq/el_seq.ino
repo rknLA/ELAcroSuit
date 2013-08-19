@@ -26,7 +26,7 @@
 #define RIGHT_FOOT A7
 
 
-int el_pins[] = {EL_A, EL_B, EL_C, EL_D, EL_F, EL_G, EL_H};
+int el_pins[] = {EL_A, EL_B, EL_C, EL_D, EL_E, EL_F, EL_G, EL_H};
 int el_count = 8;
 
 int sensor_pins[] = {LEFT_SHOULDER,
