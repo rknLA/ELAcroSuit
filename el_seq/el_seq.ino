@@ -41,6 +41,7 @@ void setup() {
   // intialize EL wire pins
   for (int i = 0; i < el_count; ++i) {
     pinMode(el_pins[i], OUTPUT);
+    digitalWrite(el_pins[i], LOW);
     
     // initialize sensor pins too
     if (i < sensor_count) {
@@ -49,56 +50,48 @@ void setup() {
     }
   }
 
+/*
   // start serial port at 9600 bps:
   Serial.begin(9600);
   while (!Serial) {
     ; // wait for serial port to connect. Needed for Leonardo only
   }
+  */
 }
 
-// for now, just display some el blinkies.
-byte lights = 0;
-byte stage = 0;
-unsigned long change_time = 0;
-int last_highest = -1;
+unsigned int adcMax = 1024;
+unsigned int adcMin = 0;
+unsigned int adcRange = 1;
+int lastElLit = -1;
 void loop() {
-  /*
-  unsigned long now = millis();
-  if (now - change_time > 250) {
-    stage = (stage + 1); //% el_count;
-
-    write_lights(stage);
-    change_time = now;
-  }
-  */
+  // sensor is active low
+  int sensorValue = 1023 - analogRead(A7);
   
-  int analogValue = analogRead(A7);
-  // find highest order bit
-  int highest = -1;
-  for (int i = 0; i < 8; ++i) {
-    if ((analogValue >> i) & 1) {
-      highest = i;
-    }
+  // maintain extrema
+  adcMax = max(adcMax, sensorValue);
+  adcMin = min(adcMin, sensorValue);
+  adcRange = adcMax - adcMin;
+  
+  // in case Bad Things happen
+  if (adcRange > 1024) {
+    adcRange = 0;
   }
-  // compensate for 10 bit ADC
-  highest -= 2;
-  if (highest > 0) {
-    if (highest != last_highest) {
-      digitalWrite(el_pins[highest], HIGH);
-      digitalWrite(el_pins[last_highest], LOW);
-      last_highest = highest;
-    }
+  
+  
+  // scale input according to extrema
+  int scaledValue = (sensorValue - adcMin) / adcRange;
+  
+  // map scaped value from 0-7
+  int valueAsElIndex = scaledValue / 8;
+  if (valueAsElIndex != lastElLit) {
+    digitalWrite(el_pins[valueAsElIndex], HIGH);
+    digitalWrite(el_pins[lastElLit], LOW);
+    lastElLit = valueAsElIndex;
   }      
   
+  /*
   Serial.print("Sensor value: ");
   Serial.print(analogValue);
   Serial.print("\n");
-}
-
-void write_lights(byte light_mask) {
-  // loop through the byte to write pins.. super inefficient. whatever
-  for (int i = 0; i < el_count; ++i) {
-    boolean state = light_mask & (1 << i);
-    digitalWrite(el_pins[i], state);
-  }
+  */
 }
