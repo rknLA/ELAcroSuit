@@ -19,12 +19,24 @@
 #define EL_H 9
 
 // ADC mapping, in case it needs to change later
-#define ADC_LEFT_SHOULDER A2
-#define ADC_RIGHT_SHOULDER A3
-#define ADC_LEFT_HIP A4
-#define ADC_RIGHT_HIP A5
-#define ADC_LEFT_FOOT A6
-#define ADC_RIGHT_FOOT A7
+#define ADC_LEFT_SHOULDER     A2
+#define ADC_RIGHT_SHOULDER    A3
+#define ADC_LEFT_HIP          A4
+#define ADC_RIGHT_HIP         A5
+#define ADC_LEFT_FOOT         A6
+#define ADC_RIGHT_FOOT        A7
+
+// ADC Thresholding
+#define LEFT_SHOULDER_THRESHOLD   600
+#define RIGHT_SHOULDER_THRESHOLD  600 
+#define LEFT_HIP_THRESHOLD        600
+#define RIGHT_HIP_THRESHOLD       600
+#define LEFT_FOOT_THRESHOLD       600
+#define RIGHT_FOOT_THRESHOLD      600
+
+// take advantage of the consecutive analog pins to turn the sensor
+// mapping into consecutive array indeces starting at 0
+#define Sensor_Table_Index(sensor) ((sensor) - A2)
 
 // you might also want to do EL mapping, i.e.:
 // #define EL_LEFT_SHOULDER EL_D
@@ -43,7 +55,16 @@ int SensorPins[] = {ADC_LEFT_SHOULDER,
                     ADC_RIGHT_FOOT};
 int SensorPinCount = 6;
 
+int sensorTable[6];
 
+// simple helper method, just cause it's less typing.
+// usage: SensorThreshold(ADC_LEFT_SHOULDER);
+int SensorThreshold(int sensorPin) {
+  return sensorTable[Sensor_Table_Index(sensorPin)];
+}
+
+
+// arduino !
 
 
 void setup() {
