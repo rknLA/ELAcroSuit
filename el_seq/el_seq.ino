@@ -120,7 +120,7 @@ void loop() {
       analogValues[i] = analogRead(SensorPins[i]);
 
       // for now, testing, just map SensorPins[i] to ELPins[i]
-      if (analogValues[i] > SensorThreshold(SensorPins[i])) {
+      if (analogValues[i] < SensorThreshold(SensorPins[i])) {
         // threshold crossed, turn on the light
         digitalWrite(ELPins[i], HIGH);
       } else {
