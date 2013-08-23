@@ -5,7 +5,7 @@
  * by Leslie Bienenfeld and Kevin Nelson 
  */
  
-#define DEBUG
+//#define DEBUG
 
 // oh arduino... there must be a better way.
 // EL Driver labels and their corresponding digital pins
@@ -44,16 +44,16 @@
 
 
 // Array-ize the pins, so you can use for loops
+#define ELPinCount (8)
 int ELPins[] = {EL_A, EL_B, EL_C, EL_D, EL_E, EL_F, EL_G, EL_H};
-int ELPinCount = 8;
 
+#define SensorPinCount (6)
 int SensorPins[] = {ADC_LEFT_SHOULDER,
                     ADC_RIGHT_SHOULDER,
                     ADC_LEFT_HIP,
                     ADC_RIGHT_HIP,
                     ADC_LEFT_FOOT,
                     ADC_RIGHT_FOOT};
-int SensorPinCount = 6;
 
 int sensorTable[6];
 
@@ -80,31 +80,52 @@ void setup() {
     pinMode(SensorPins[i], INPUT);
     digitalWrite(SensorPins[i], HIGH); // use the internal pull-up resistor
   }
+
+  // initialize the sensor threshold table.  you shouldn't need to change this
+  // change the defines to change the thresholds.
+  // hysteresis isn't supported in this version, sorry champ.
+  sensorTable[Sensor_Table_Index(ADC_LEFT_SHOULDER)] = LEFT_SHOULDER_THRESHOLD;
+  sensorTable[Sensor_Table_Index(ADC_RIGHT_SHOULDER)] = RIGHT_SHOULDER_THRESHOLD;
+  sensorTable[Sensor_Table_Index(ADC_LEFT_HIP)] = LEFT_HIP_THRESHOLD;
+  sensorTable[Sensor_Table_Index(ADC_RIGHT_HIP)] = RIGHT_HIP_THRESHOLD;
+  sensorTable[Sensor_Table_Index(ADC_LEFT_FOOT)] = LEFT_FOOT_THRESHOLD;
+  sensorTable[Sensor_Table_Index(ADC_RIGHT_FOOT)] = RIGHT_FOOT_THRESHOLD;
 }
 
 
-byte lastHighBit = 0;
-unsigned long lastTime = 0;
+
+
+// loop related things
+
+
+int lastAnalog[SensorPinCount];
+int analogValues[SensorPinCount];
+
+unsigned long lastNow = 0;
 void loop() {
   unsigned long now = millis();
-  if (now - lastTime > 300) {
-    // 300 ms refresh rate
+  int refreshRate = 100; //ms
+  if (now - lastNow > refreshRate) {
+    int i;
 
-    int pressure = 1024 - analogRead(A7);
-    
-    // chop the last 2 bits
-    byte scaledPressure = pressure >> 2;
-    
-    byte highBit = highest_order_bit(scaledPressure);
+    // read from sensors
+    for (i = 0; i < SensorPinCount; ++i ) {
+      analogValues[i] = analogRead(SensorPins[i]);
 
-    if (highBit != lastHighBit) {
-      digitalWrite(ELPins[highBit], HIGH);
-      digitalWrite(ELPins[lastHighBit], LOW);
-      lastHighBit = highBit;
+      // for now, testing, just map SensorPins[i] to ELPins[i]
+      if (analogValues[i] > SensorThreshold(SensorPins[i])) {
+        // threshold crossed, turn on the light
+        digitalWrite(ELPins[i], HIGH);
+      } else {
+        digitalWrite(ELPins[i], LOW);
+      }
     }
-    
-    
-    lastTime = now;
+
+    // get ready for next round
+    lastNow = now;
+    for (i = 0; i < SensorPinCount; ++i) {
+      lastAnalog[i] = analogValues[i];
+    }
   }
 }
 
