@@ -5,7 +5,7 @@
  * by Leslie Bienenfeld and Kevin Nelson 
  */
  
-//#define DEBUG
+#define DEBUG
 
 // oh arduino... there must be a better way.
 // EL Driver labels and their corresponding digital pins
@@ -90,6 +90,13 @@ void setup() {
   sensorTable[Sensor_Table_Index(ADC_RIGHT_HIP)] = RIGHT_HIP_THRESHOLD;
   sensorTable[Sensor_Table_Index(ADC_LEFT_FOOT)] = LEFT_FOOT_THRESHOLD;
   sensorTable[Sensor_Table_Index(ADC_RIGHT_FOOT)] = RIGHT_FOOT_THRESHOLD;
+
+#ifdef DEBUG
+  Serial.begin(9600);
+  while (!Serial) {
+    ; // wait for serial port to connect, just in case?
+  }
+#endif
 }
 
 
@@ -125,6 +132,11 @@ void loop() {
     lastNow = now;
     for (i = 0; i < SensorPinCount; ++i) {
       lastAnalog[i] = analogValues[i];
+#ifdef DEBUG
+      String sensorOutput = "Sensor ";
+      sensorOutput = sensorOutput + i + " Value: " + analogValues[i] + "\n";
+      Serial.print(sensorOutput);
+#endif
     }
   }
 }
