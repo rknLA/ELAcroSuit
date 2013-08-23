@@ -1,5 +1,6 @@
 /* EL AcroYoga Suit
  * Build this for Lilypad 328 to use it with the old Sparkfun EL Sequencer
+ * (Which is what we're doing...)
  *
  * by Leslie Bienenfeld and Kevin Nelson 
  */
@@ -18,39 +19,46 @@
 #define EL_H 9
 
 // ADC mapping, in case it needs to change later
-#define LEFT_SHOULDER A2
-#define RIGHT_SHOULDER A3
-#define LEFT_HIP A4
-#define RIGHT_HIP A5
-#define LEFT_FOOT A6
-#define RIGHT_FOOT A7
+#define ADC_LEFT_SHOULDER A2
+#define ADC_RIGHT_SHOULDER A3
+#define ADC_LEFT_HIP A4
+#define ADC_RIGHT_HIP A5
+#define ADC_LEFT_FOOT A6
+#define ADC_RIGHT_FOOT A7
+
+// you might also want to do EL mapping, i.e.:
+// #define EL_LEFT_SHOULDER EL_D
 
 
-int el_pins[] = {EL_A, EL_B, EL_C, EL_D, EL_E, EL_F, EL_G, EL_H};
-int el_count = 8;
 
-int sensor_pins[] = {LEFT_SHOULDER,
-                     RIGHT_SHOULDER,
-                     LEFT_HIP,
-                     RIGHT_HIP,
-                     LEFT_FOOT,
-                     RIGHT_FOOT};
-int sensor_count = 6;
+// Array-ize the pins, so you can use for loops
+int ELPins[] = {EL_A, EL_B, EL_C, EL_D, EL_E, EL_F, EL_G, EL_H};
+int ELPinCount = 8;
+
+int SensorPins[] = {ADC_LEFT_SHOULDER,
+                    ADC_RIGHT_SHOULDER,
+                    ADC_LEFT_HIP,
+                    ADC_RIGHT_HIP,
+                    ADC_LEFT_FOOT,
+                    ADC_RIGHT_FOOT};
+int SensorPinCount = 6;
+
+
+
 
 void setup() {
+  int i;
   // intialize EL wire pins
-  for (int i = 0; i < el_count; ++i) {
-    pinMode(el_pins[i], OUTPUT);
-    digitalWrite(el_pins[i], LOW);
-    
-    // initialize sensor pins too
-    if (i < sensor_count) {
-      pinMode(sensor_pins[i], INPUT);
-      digitalWrite(sensor_pins[i], HIGH); // use the internal pull-up resistor
-    }
+  for (i = 0; i < ELPinCount; ++i) {
+    pinMode(ELPins[i], OUTPUT);
+    digitalWrite(ELPins[i], LOW);
   }
 
-
+  // initialize sensor pins
+  for (i = 0; i < SensorPinCount; ++i) {
+    pinMode(SensorPins[i], INPUT);
+    digitalWrite(SensorPins[i], HIGH); // use the internal pull-up resistor
+  }
 }
 
 
@@ -69,8 +77,8 @@ void loop() {
     byte highBit = highest_order_bit(scaledPressure);
 
     if (highBit != lastHighBit) {
-      digitalWrite(el_pins[highBit], HIGH);
-      digitalWrite(el_pins[lastHighBit], LOW);
+      digitalWrite(ELPins[highBit], HIGH);
+      digitalWrite(ELPins[lastHighBit], LOW);
       lastHighBit = highBit;
     }
     
@@ -79,7 +87,7 @@ void loop() {
   }
 }
 
-// highest order bit function from S.O.
+// highest order bit function stolen from stack overflow.
 byte highest_order_bit(byte input) {
   if (!input) {
     return 0;
